@@ -210,21 +210,21 @@ export const siteConfig: SiteConfig = {
       title: "Cozy Afternoons",
       date: "November 05, 2025",
       description: "Warm tea, soft blankets, and peaceful thoughts.",
-      image: "/images/gallery-4.jpg"
+      image: "/images/portrait.jpg"
     },
     {
       id: "mem-5",
       title: "A Winter's Wish",
       date: "December 21, 2025",
       description: "Making a wish as the first snowflake touches the ground.",
-      image: "/images/gallery-5.jpg"
+      image: "/images/gallery-1.jpg"
     },
     {
       id: "mem-6",
       title: "Spring Symphony",
       date: "April 02, 2026",
       description: "When the flowers open up to welcome the sky blue sun.",
-      image: "/images/gallery-6.jpg"
+      image: "/images/gallery-2.jpg"
     }
   ],
   constellations: [
@@ -260,7 +260,7 @@ export const siteConfig: SiteConfig = {
       title: "Golden Hour Reflection",
       date: "September 09, 2025",
       description: "Looking back at the path traveled and realizing how beautiful the journey is.",
-      image: "/images/gallery-4.jpg",
+      image: "/images/portrait.jpg",
       x: 70,
       y: 55
     },
@@ -269,7 +269,7 @@ export const siteConfig: SiteConfig = {
       title: "The 11:11 Constellation",
       date: "November 11, 2025",
       description: "Connecting the stars of memory to create a lasting pattern of joy.",
-      image: "/images/gallery-5.jpg",
+      image: "/images/gallery-1.jpg",
       x: 88,
       y: 30
     }

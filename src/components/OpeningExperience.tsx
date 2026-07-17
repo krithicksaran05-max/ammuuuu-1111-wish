@@ -24,7 +24,7 @@ export default function OpeningExperience({
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [activeStep, setActiveStep] = useState<"customize" | "countdown">("customize");
+  const [activeStep, setActiveStep] = useState<"customize" | "countdown">("countdown");
 
   const [clockState, setClockState] = useState<"ticking" | "1111">("ticking");
   const [clockTime, setClockTime] = useState("11:10:55");
@@ -189,9 +189,34 @@ export default function OpeningExperience({
       <DreamCanvas state="opening" triggerShootingStar={canvasTriggerStar} />
 
       <AnimatePresence mode="wait">
-        
-        {/* Step 1: Dream Customizer Upload Panel */}
-        {activeStep === "customize" && (
+        {!started ? (
+          <motion.div
+            key="pre-start"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleProceed}
+            className="absolute inset-0 flex flex-col items-center justify-center bg-[#01030a]/80 cursor-pointer z-20 pointer-events-auto"
+          >
+            <motion.p
+              animate={{ opacity: [0.3, 0.7, 0.3] }}
+              transition={{ repeat: Infinity, duration: 3 }}
+              className="font-playfair text-xl tracking-[0.2em] text-sky-blue/80 text-center px-4"
+            >
+              Tap the night sky to begin the journey...
+            </motion.p>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveStep("customize");
+                setStarted(true);
+              }}
+              className="mt-8 px-4 py-2 rounded-full glass-panel border border-white/10 hover:border-sky-blue/30 text-[10px] text-silver/60 hover:text-sky-blue font-montserrat tracking-widest uppercase transition-all duration-300 pointer-events-auto cursor-pointer z-30 font-semibold"
+            >
+              ⚙️ Customize Assets
+            </button>
+          </motion.div>
+        ) : activeStep === "customize" && (
           <motion.div
             key="customize-step"
             initial={{ opacity: 0, scale: 0.95 }}

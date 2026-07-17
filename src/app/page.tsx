@@ -21,8 +21,7 @@ export default function Home() {
   const [openingComplete, setOpeningComplete] = useState(false);
   const [canvasState, setCanvasState] = useState<"opening" | "transition" | "main" | "ending">("opening");
   
-  // Custom uploaded assets
-  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null);
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>("/images/portrait.jpg");
 
   const handleOpeningComplete = () => {
     setCanvasState("transition");
