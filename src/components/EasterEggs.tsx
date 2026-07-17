@@ -128,8 +128,8 @@ export default function EasterEggs() {
               <h3 className="font-[family-name:var(--font-playfair)] text-xl text-sky mb-4 font-light">
                 Hidden Note
               </h3>
-              <p className="font-[family-name:var(--font-cormorant)] text-lg md:text-xl text-white/80 italic leading-relaxed mb-6">
-                "P.S. I love you more than all the stars in the night sky."
+              <p className="font-[family-name:var(--font-cormorant)] text-lg md:text-xl text-white/85 italic leading-relaxed mb-6 font-semibold">
+                &ldquo;i love you more than anything maa&rdquo;
               </p>
               <button
                 onClick={() => setShowSecretMessage(false)}

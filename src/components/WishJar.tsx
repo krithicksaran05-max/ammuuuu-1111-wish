@@ -37,6 +37,17 @@ export default function WishJar() {
       );
     }
 
+    // Send wish to Telegram API in background
+    fetch("/api/send-wish", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ wish }),
+    }).catch((err) => {
+      console.error("Failed to forward wish to Telegram:", err);
+    });
+
     // Simulate sending animations
     setTimeout(() => {
       setWishText("");
