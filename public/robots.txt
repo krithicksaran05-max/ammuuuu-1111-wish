@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ammuuuu-1111-wish.vercel.app/sitemap.xml

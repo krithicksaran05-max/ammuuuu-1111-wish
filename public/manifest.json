@@ -1,0 +1,17 @@
+{
+  "name": "11:11 — For Ammuuu",
+  "short_name": "11:11 Wish",
+  "description": "A luxury digital experience crafted with love. Every 11:11, a wish is made — and it's always you.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#001B44",
+  "theme_color": "#001B44",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -1,178 +1,168 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { siteConfig } from "@/config/site-config";
-import { Sparkles, RefreshCw } from "lucide-react";
-import { useAudio } from "./AudioProvider";
 
 export default function WishJar() {
-  const { playSparkle } = useAudio();
-  const [currentWish, setCurrentWish] = useState<string | null>(null);
-  const [isShaking, setIsShaking] = useState(false);
-  const [jarStars, setJarStars] = useState<{ id: number; left: number; top: number; delay: number; scale: number }[]>([]);
+  const [wishText, setWishText] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
 
-  // Generate random positions for stars inside the jar
-  useEffect(() => {
-    const stars = Array.from({ length: 25 }).map((_, i) => ({
-      id: i,
-      left: 15 + Math.random() * 70, // percentage x inside jar width
-      top: 30 + Math.random() * 55,  // percentage y inside jar height
-      delay: Math.random() * 2,
-      scale: Math.random() * 0.8 + 0.4,
-    }));
-    setJarStars(stars);
-  }, []);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const wish = wishText.trim();
+    if (!wish || isSending) return;
 
-  const handleRevealWish = () => {
-    if (isShaking) return;
-    setIsShaking(true);
-    playSparkle();
+    setIsSending(true);
 
-    // Trigger random wish after shake completes
+    // Vibrate if mobile
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate(40);
+    }
+
+    // Scroll smoothly to the photo section
+    document.getElementById("photo-section")?.scrollIntoView({ behavior: "smooth" });
+
+    // Dispatch global events
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("spawn-wish-star", {
+          detail: { text: wish },
+        })
+      );
+      window.dispatchEvent(
+        new CustomEvent("wish-submitted", {
+          detail: { text: wish },
+        })
+      );
+    }
+
+    // Simulate sending animations
     setTimeout(() => {
-      const wishes = siteConfig.wishes;
-      const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
-      setCurrentWish(randomWish);
-      setIsShaking(false);
-    }, 700);
+      setWishText("");
+      setIsSending(false);
+      setShowStatus(true);
+
+      setTimeout(() => {
+        setShowStatus(false);
+      }, 4000);
+    }, 1200);
   };
 
   return (
-    <section className="relative py-24 px-6 overflow-hidden flex flex-col items-center justify-center">
-      
-      {/* Background aurora */}
-      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-sky-blue/5 rounded-full blur-[100px] pointer-events-none" />
+    <section
+      id="wish-jar-section"
+      className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 py-24 z-10"
+    >
+      {/* Title */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+        viewport={{ once: true }}
+        className="text-center mb-16 max-w-sm z-10"
+      >
+        <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl text-white font-light tracking-wide mb-4">
+          The Cosmic Wish Jar
+        </h2>
+        <p className="font-[family-name:var(--font-cormorant)] text-lg text-white/50 italic">
+          Type your deepest wish and release it to the night sky
+        </p>
+      </motion.div>
 
-      <div className="max-w-4xl w-full flex flex-col items-center z-10">
-        
-        {/* Header */}
-        <div className="text-center mb-12">
-          <motion.span
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 0.8, y: 0 }}
-            viewport={{ once: true }}
-            className="font-montserrat text-xs tracking-[0.35em] text-sky-blue uppercase"
-          >
-            Vessel of Stars
-          </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="font-playfair text-3xl md:text-4xl font-light text-white mt-2"
-          >
-            Magical Wish Jar
-          </motion.h2>
-          <p className="font-poppins text-sm text-silver/60 font-light mt-3 max-w-sm mx-auto leading-relaxed">
-            Tap the glowing glass jar to shake the cosmic stars and release a special wish.
-          </p>
+      {/* Jar Glass morphism wrapper */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.2, ease: [0.25, 0.8, 0.25, 1] }}
+        viewport={{ once: true }}
+        className="relative w-full max-w-md glass rounded-3xl p-8 md:p-10 flex flex-col items-center border-glow"
+      >
+        {/* Top reflection shine */}
+        <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.05] to-transparent pointer-events-none" />
+
+        {/* Floating elements inside jar (visual ambient) */}
+        <div className="absolute w-[180px] h-[180px] bg-sky/5 rounded-full blur-[40px] pointer-events-none" />
+
+        {/* Jar top ring SVG decor */}
+        <div className="w-16 h-4 bg-white/10 rounded-full border border-white/20 mb-8 flex items-center justify-center">
+          <div className="w-12 h-1.5 bg-[#001B44] rounded-full" />
         </div>
 
-        {/* Jar and Scroll layout */}
-        <div className="flex flex-col items-center space-y-12 w-full mt-6">
-          
-          {/* Glowing Jar container */}
-          <motion.div
-            onClick={handleRevealWish}
-            animate={
-              isShaking
-                ? {
-                    x: [0, -10, 10, -10, 10, -5, 5, 0],
-                    rotate: [0, -4, 4, -4, 4, -2, 2, 0],
-                  }
-                : {}
-            }
-            transition={{ duration: 0.6 }}
-            className="relative w-48 h-64 cursor-pointer group flex items-center justify-center select-none"
-          >
-            {/* Back glow */}
-            <div className="absolute inset-0 bg-sky-blue/15 rounded-full blur-2xl group-hover:scale-110 group-hover:bg-sky-blue/20 transition-all duration-700 pointer-events-none" />
-            
-            {/* Jar Neck / Lid */}
-            <div className="absolute top-2 w-28 h-6 bg-linear-to-r from-silver/70 via-white/80 to-silver/70 rounded-md border border-white/20 shadow-md z-15" />
-            <div className="absolute top-8 w-24 h-3 bg-sky-blue/20 border border-white/5 z-10" />
-
-            {/* Jar Body Glass */}
-            <div className="absolute inset-x-4 top-8 bottom-0 rounded-t-3xl rounded-b-5xl glass-panel border border-white/25 shadow-2xl flex items-center justify-center overflow-hidden z-10">
-              
-              {/* Liquid reflection sheen */}
-              <div className="absolute top-0 bottom-0 left-2 w-6 bg-white/5 blur-[2px] skew-x-6 rounded-l-3xl pointer-events-none" />
-              
-              {/* Sparkly reflection overlay */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
-                <div className="absolute top-0 left-[-100%] w-[200%] h-full bg-linear-to-r from-transparent via-white/5 to-transparent transform -skew-x-12 transition-transform duration-700 group-hover:translate-x-[150%]" />
-              </div>
-
-              {/* Floating Jar Stars */}
-              {jarStars.map((star) => (
-                <motion.div
-                  key={star.id}
-                  style={{
-                    left: `${star.left}%`,
-                    top: `${star.top}%`,
-                  }}
-                  animate={{
-                    y: [0, -8, 0],
-                    scale: [star.scale, star.scale * 1.3, star.scale],
-                    opacity: [0.3, 0.9, 0.3],
-                  }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 3,
-                    delay: star.delay,
-                    ease: "easeInOut",
-                  }}
-                  className="absolute w-2 h-2 rounded-full bg-white shadow-[0_0_8px_#87CEEB]"
-                />
-              ))}
-
-              {/* Magical energy core glow */}
-              <div className="absolute bottom-6 w-24 h-24 rounded-full bg-sky-blue/10 blur-xl pointer-events-none animate-pulse" />
-            </div>
-
-            {/* Tap icon indicator */}
-            <div className="absolute bottom-[-16px] flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity duration-300 font-montserrat text-[10px] text-sky-blue tracking-widest uppercase">
-              <Sparkles className="w-3.5 h-3.5" /> TAP TO SHAKE
-            </div>
-          </motion.div>
-
-          {/* Opened wish parchment scroll overlay */}
-          <div className="h-32 w-full max-w-lg flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              {currentWish && (
-                <motion.div
-                  key={currentWish}
-                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -15 }}
-                  transition={{ type: "spring", stiffness: 100, damping: 15 }}
-                  className="w-full rounded-2xl p-6 glass-panel-light border border-sky-blue/30 shadow-[0_0_15px_rgba(135,206,235,0.15)] flex flex-col items-center text-center space-y-4 relative"
-                >
-                  {/* Glowing icon */}
-                  <div className="absolute top-[-16px] px-3.5 py-1 rounded-full glass-panel border border-sky-blue/30 text-sky-blue flex items-center gap-1.5 text-[9px] font-montserrat tracking-widest uppercase">
-                    <Sparkles className="w-3 h-3 animate-spin" /> Revealed Wish
-                  </div>
-
-                  <p className="font-playfair text-lg md:text-xl text-white font-light tracking-wide pt-2 leading-relaxed">
-                    "{currentWish}"
-                  </p>
-
-                  <button
-                    onClick={handleRevealWish}
-                    className="text-sky-blue/60 hover:text-sky-blue text-[10px] font-montserrat tracking-wider flex items-center gap-1 focus:outline-hidden hover:scale-105 transition-all cursor-pointer"
-                  >
-                    <RefreshCw className="w-3 h-3" /> Get Another Wish
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        <form onSubmit={handleSubmit} className="w-full relative z-10 flex flex-col items-center">
+          {/* Wish Input */}
+          <div className="w-full relative mb-6">
+            <textarea
+              value={wishText}
+              onChange={(e) => setWishText(e.target.value)}
+              placeholder="Write a wish for us..."
+              maxLength={120}
+              disabled={isSending}
+              rows={3}
+              className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] border border-white/10 focus:border-sky/50 text-white placeholder-white/30 text-sm focus:outline-none resize-none transition-all duration-300 font-[family-name:var(--font-inter)] leading-relaxed"
+            />
+            {/* Length count */}
+            <span className="absolute bottom-3 right-4 text-[10px] text-white/30">
+              {wishText.length}/120
+            </span>
           </div>
 
-        </div>
+          {/* Submit button */}
+          <button
+            type="submit"
+            disabled={!wishText.trim() || isSending}
+            className={`w-full py-4 rounded-full font-[family-name:var(--font-inter)] text-xs tracking-[0.25em] uppercase font-semibold transition-all duration-300 cursor-pointer overflow-hidden relative ${
+              wishText.trim() && !isSending
+                ? "glass-button text-white border border-sky/30"
+                : "bg-white/5 border border-white/5 text-white/20 cursor-not-allowed"
+            }`}
+          >
+            {isSending ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg
+                  className="animate-spin h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Sending to Stars...
+              </span>
+            ) : (
+              "Send to Cosmos"
+            )}
+          </button>
+        </form>
 
-      </div>
+        {/* Temporary floating success label */}
+        <AnimatePresence>
+          {showStatus && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute -bottom-16 text-center"
+            >
+              <p className="font-[family-name:var(--font-cormorant)] text-lg text-sky italic">
+                ✨ Look up! Your wish has turned into a star...
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </section>
   );
 }

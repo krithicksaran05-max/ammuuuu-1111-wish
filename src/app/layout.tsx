@@ -1,52 +1,59 @@
-import type { Metadata } from "next";
-import { Poppins, Playfair_Display, Great_Vibes, Montserrat, Dancing_Script } from "next/font/google";
 import "./globals.css";
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-poppins",
-  display: "swap",
-});
+import type { Metadata, Viewport } from "next";
+import { Playfair_Display, Cormorant_Garamond, Inter, Noto_Sans_Tamil } from "next/font/google";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-playfair",
   display: "swap",
 });
 
-const greatVibes = Great_Vibes({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-great-vibes",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-cormorant",
   display: "swap",
 });
 
-const montserrat = Montserrat({
+const inter = Inter({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const notoTamil = Noto_Sans_Tamil({
+  subsets: ["tamil"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-montserrat",
+  variable: "--font-tamil",
   display: "swap",
 });
 
-const dancingScript = Dancing_Script({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-dancing",
-  display: "swap",
-});
-
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
-  initialScale: 1.0,
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#001B44",
 };
 
 export const metadata: Metadata = {
-  title: "A Magical 11:11 Wish | Ammuuuu 💙",
-  description: "A beautiful, premium digital experience filled with floating tulips, blue butterflies, and a sky of stars spelling out a special wish at 11:11.",
-  keywords: ["11:11", "Ammuuuu", "Tulips", "Wishes", "Stars", "Magic", "Blue Butterflies"],
-  authors: [{ name: "Antigravity" }],
+  title: "11:11 — For Ammuuu ❤️",
+  description:
+    "A luxury digital experience crafted with love. Every 11:11, a wish is made — and it's always you.",
+  keywords: ["11:11", "love", "Ammuuu", "wish", "digital experience"],
+  authors: [{ name: "With Love" }],
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: "11:11 — A Wish for You",
+    description: "Every 11:11, my wish is the same. It's you. Forever.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -57,9 +64,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${playfair.variable} ${greatVibes.variable} ${montserrat.variable} ${dancingScript.variable} h-full antialiased scroll-smooth`}
+      className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${notoTamil.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans select-none">
+      <body className="min-h-screen min-h-dvh bg-deep-navy text-white font-[family-name:var(--font-inter)] select-none overflow-x-hidden">
         {children}
       </body>
     </html>
