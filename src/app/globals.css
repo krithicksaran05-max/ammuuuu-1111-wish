@@ -1,26 +1,155 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@theme {
+  --color-navy: #020617;
+  --color-midnight: #0b132b;
+  --color-sky-blue: #87CEEB;
+  --color-baby-blue: #BFEFFF;
+  --color-lavender: #E6E6FA;
+  --color-soft-purple: #8A2BE2;
+  
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 3s ease-in-out infinite;
+  --animate-aurora: aurora 20s linear infinite;
+  --animate-shimmer: shimmer 2.5s infinite;
+  --animate-sway: sway 4s ease-in-out infinite;
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(1deg); }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.4; filter: drop-shadow(0 0 5px rgba(135, 206, 235, 0.4)); }
+    50% { opacity: 0.8; filter: drop-shadow(0 0 15px rgba(135, 206, 235, 0.8)); }
+  }
+  @keyframes aurora {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  @keyframes sway {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(4deg); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root {
+  --background: #020617;
+  --foreground: #e2e8f0;
+}
+
+html, body {
+  background: #020617;
+  color: #e2e8f0;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  cursor: none; /* Hide default cursor for custom experience */
+}
+
+/* Hide cursor on touch devices */
+@media (max-width: 768px) {
+  html, body {
+    cursor: auto;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(135, 206, 235, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(135, 206, 235, 0.6);
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: rgba(11, 19, 43, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(135, 206, 235, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.glass-card {
+  background: rgba(11, 19, 43, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(135, 206, 235, 0.1);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(135, 206, 235, 0.35);
+  box-shadow: 0 0 20px rgba(135, 206, 235, 0.25);
+  transform: translateY(-5px);
+}
+
+/* Text Glowing effects */
+.text-glow-blue {
+  text-shadow: 0 0 10px rgba(135, 206, 235, 0.6), 0 0 20px rgba(135, 206, 235, 0.3);
+}
+
+.text-glow-white {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+/* Border Glow */
+.glow-border {
+  position: relative;
+}
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(90deg, transparent, rgba(135, 206, 235, 0.5), transparent);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.glow-border:hover::after {
+  opacity: 1;
+}
+
+/* Aurora Backdrop effect */
+.aurora-bg {
+  background: linear-gradient(135deg, #020617 0%, #0b132b 40%, #1e1b4b 70%, #020617 100%);
+  background-size: 400% 400%;
+}
+
+/* Smooth typing text animation classes */
+.typing-cursor::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  from, to { color: transparent }
+  50% { color: #87CEEB; }
+}
+
+/* Spotlight pointer mask overlay */
+.spotlight {
+  pointer-events: none;
+  background: radial-gradient(circle 250px at var(--mouse-x, 0) var(--mouse-y, 0), rgba(135, 206, 235, 0.05), transparent 80%);
 }
