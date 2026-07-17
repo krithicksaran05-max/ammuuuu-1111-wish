@@ -20,6 +20,9 @@ import { AnimatePresence, motion } from "framer-motion";
 export default function Home() {
   const [openingComplete, setOpeningComplete] = useState(false);
   const [canvasState, setCanvasState] = useState<"opening" | "transition" | "main" | "ending">("opening");
+  
+  // Custom uploaded assets
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null);
 
   const handleOpeningComplete = () => {
     setCanvasState("transition");
@@ -35,6 +38,11 @@ export default function Home() {
     setCanvasState(isEnding ? "ending" : "main");
   };
 
+  const handlePhotoUploaded = (file: File) => {
+    const url = URL.createObjectURL(file);
+    setUploadedPhotoUrl(url);
+  };
+
   return (
     <AudioProvider>
       <main className="relative w-full min-h-screen bg-[#020617] overflow-hidden select-none">
@@ -42,7 +50,10 @@ export default function Home() {
         {/* Render Opening Experience Overlay */}
         <AnimatePresence mode="wait">
           {!openingComplete && (
-            <OpeningExperience onComplete={handleOpeningComplete} />
+            <OpeningExperience 
+              onComplete={handleOpeningComplete} 
+              onPhotoUploaded={handlePhotoUploaded}
+            />
           )}
         </AnimatePresence>
 
@@ -66,8 +77,8 @@ export default function Home() {
             {/* Main scroll sections */}
             <div className="w-full relative z-10 flex flex-col">
               
-              {/* Hero header */}
-              <Hero />
+              {/* Hero header with custom uploaded photo */}
+              <Hero customPhotoUrl={uploadedPhotoUrl} />
 
               {/* Heartfelt typing letter */}
               <WishLetter />
@@ -96,7 +107,7 @@ export default function Home() {
             </div>
 
             {/* Custom Footer */}
-            <footer className="relative z-10 py-8 border-t border-white/5 bg-navy/60 text-center">
+            <footer className="relative z-10 py-8 border-t border-white/5 bg-[#020617]/65 text-center">
               <p className="font-montserrat text-[10px] text-silver/40 tracking-widest uppercase">
                 MADE WITH MAGIC &amp; HOPE • 11:11
               </p>

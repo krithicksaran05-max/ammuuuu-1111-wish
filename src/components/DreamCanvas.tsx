@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { siteConfig } from "@/config/site-config";
 
 interface DreamCanvasProps {
   state: "opening" | "transition" | "main" | "ending";
-  intensity?: number; // 0 to 1, increases particle counts or brightness
+  intensity?: number;
   triggerShootingStar?: boolean;
 }
 
@@ -18,7 +17,7 @@ export default function DreamCanvas({
   const mouseRef = useRef({ x: -1000, y: -1000 });
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
-  // Handle window resizing
+  // Window resize handler
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handleResize = () => {
@@ -29,7 +28,7 @@ export default function DreamCanvas({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Track mouse movement
+  // Track mouse coordinates
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
@@ -51,8 +50,7 @@ export default function DreamCanvas({
     const width = canvas.width;
     const height = canvas.height;
 
-    // Define constellation points for "AMMUUUU"
-    // Normalized coords (0 to 1)
+    // Define constellation points for "AMMUUUU" (Centered on screen)
     const letterA = [
       { x: 0.12, y: 0.55 },
       { x: 0.15, y: 0.35 },
@@ -60,7 +58,6 @@ export default function DreamCanvas({
       { x: 0.14, y: 0.47 },
       { x: 0.16, y: 0.47 },
     ];
-
     const letterM1 = [
       { x: 0.23, y: 0.55 },
       { x: 0.23, y: 0.35 },
@@ -68,7 +65,6 @@ export default function DreamCanvas({
       { x: 0.29, y: 0.35 },
       { x: 0.29, y: 0.55 },
     ];
-
     const letterM2 = [
       { x: 0.34, y: 0.55 },
       { x: 0.34, y: 0.35 },
@@ -76,7 +72,6 @@ export default function DreamCanvas({
       { x: 0.40, y: 0.35 },
       { x: 0.40, y: 0.55 },
     ];
-
     const letterU1 = [
       { x: 0.45, y: 0.35 },
       { x: 0.45, y: 0.50 },
@@ -84,7 +79,6 @@ export default function DreamCanvas({
       { x: 0.51, y: 0.50 },
       { x: 0.51, y: 0.35 },
     ];
-
     const letterU2 = [
       { x: 0.56, y: 0.35 },
       { x: 0.56, y: 0.50 },
@@ -92,7 +86,6 @@ export default function DreamCanvas({
       { x: 0.62, y: 0.50 },
       { x: 0.62, y: 0.35 },
     ];
-
     const letterU3 = [
       { x: 0.67, y: 0.35 },
       { x: 0.67, y: 0.50 },
@@ -100,7 +93,6 @@ export default function DreamCanvas({
       { x: 0.73, y: 0.50 },
       { x: 0.73, y: 0.35 },
     ];
-
     const letterU4 = [
       { x: 0.78, y: 0.35 },
       { x: 0.78, y: 0.50 },
@@ -109,23 +101,14 @@ export default function DreamCanvas({
       { x: 0.84, y: 0.35 },
     ];
 
-    const constellationLetters = [
-      letterA,
-      letterM1,
-      letterM2,
-      letterU1,
-      letterU2,
-      letterU3,
-      letterU4,
-    ];
+    const constellationLetters = [letterA, letterM1, letterM2, letterU1, letterU2, letterU3, letterU4];
     const constellationPoints: { x: number; y: number; index: number; letterIndex: number }[] = [];
     const constellationConnections: [number, number][] = [];
 
     let currentPtIndex = 0;
     constellationLetters.forEach((letterPoints, letterIdx) => {
       const letterStartIdx = currentPtIndex;
-      letterPoints.forEach((pt, ptIdx) => {
-        // adjust Y on mobile vs desktop to center it beautifully
+      letterPoints.forEach((pt) => {
         const isMobile = width < 768;
         const scaleX = isMobile ? 0.9 : 1.0;
         const shiftX = isMobile ? 0.05 : 0.0;
@@ -141,20 +124,12 @@ export default function DreamCanvas({
         currentPtIndex++;
       });
 
-      // Connections per letter
+      // Connecting strokes
       if (letterIdx === 0) {
-        // A: 0-1, 1-2, 3-4
         constellationConnections.push([letterStartIdx, letterStartIdx + 1]);
         constellationConnections.push([letterStartIdx + 1, letterStartIdx + 2]);
-        constellationConnections.push([letterStartIdx + 3, letterStartIdx + 4]);
-      } else if (letterIdx === 1 || letterIdx === 2) {
-        // M: 0-1, 1-2, 2-3, 3-4
-        constellationConnections.push([letterStartIdx, letterStartIdx + 1]);
-        constellationConnections.push([letterStartIdx + 1, letterStartIdx + 2]);
-        constellationConnections.push([letterStartIdx + 2, letterStartIdx + 3]);
         constellationConnections.push([letterStartIdx + 3, letterStartIdx + 4]);
       } else {
-        // U: 0-1, 1-2, 2-3, 3-4
         constellationConnections.push([letterStartIdx, letterStartIdx + 1]);
         constellationConnections.push([letterStartIdx + 1, letterStartIdx + 2]);
         constellationConnections.push([letterStartIdx + 2, letterStartIdx + 3]);
@@ -162,10 +137,11 @@ export default function DreamCanvas({
       }
     });
 
-    // 1. Stars definition
-    class Star {
+    // 1. 3D Parallax Starfield
+    class ParallaxStar {
       x: number;
       y: number;
+      z: number;
       size: number;
       baseOpacity: number;
       opacity: number;
@@ -173,97 +149,147 @@ export default function DreamCanvas({
       pulseOffset: number;
 
       constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
+        this.x = Math.random() * width - width / 2;
+        this.y = Math.random() * height - height / 2;
+        this.z = Math.random() * width; // depth coordinate
         this.size = Math.random() * 1.5 + 0.5;
-        this.baseOpacity = Math.random() * 0.6 + 0.2;
+        this.baseOpacity = Math.random() * 0.6 + 0.3;
         this.opacity = this.baseOpacity;
         this.pulseSpeed = Math.random() * 0.02 + 0.005;
         this.pulseOffset = Math.random() * Math.PI * 2;
       }
 
-      draw() {
-        ctx!.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-        ctx!.beginPath();
-        ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx!.fill();
-      }
+      update(tick: number, isTransition: boolean) {
+        // In transition, stars rush forward in 3D
+        if (isTransition) {
+          this.z -= 15;
+          if (this.z <= 0) {
+            this.z = width;
+            this.x = Math.random() * width - width / 2;
+            this.y = Math.random() * height - height / 2;
+          }
+        } else {
+          // Normal slow drift
+          this.z -= 0.2;
+          if (this.z <= 0) {
+            this.z = width;
+          }
+        }
 
-      update(tick: number) {
-        // Interactive star reaction (gentle repulsion from cursor)
-        const dx = mouseRef.current.x - this.x;
-        const dy = mouseRef.current.y - this.y;
+        // Project 3D coordinates onto 2D viewport
+        const k = 120 / this.z;
+        const px = this.x * k + width / 2;
+        const py = this.y * k + height / 2;
+
+        if (px < 0 || px > width || py < 0 || py > height) {
+          this.z = width;
+          this.x = Math.random() * width - width / 2;
+          this.y = Math.random() * height - height / 2;
+          return;
+        }
+
+        // Pulse opacity
+        this.opacity = this.baseOpacity + Math.sin(tick * this.pulseSpeed + this.pulseOffset) * 0.15;
+        if (this.opacity < 0.1) this.opacity = 0.1;
+
+        // Mouse displacement
+        const dx = mouseRef.current.x - px;
+        const dy = mouseRef.current.y - py;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = 120;
-
+        const maxDist = 100;
         let offsetX = 0;
         let offsetY = 0;
 
         if (dist < maxDist) {
           const force = (maxDist - dist) / maxDist;
-          offsetX = -(dx / dist) * force * 15;
-          offsetY = -(dy / dist) * force * 15;
+          offsetX = -(dx / dist) * force * 10;
+          offsetY = -(dy / dist) * force * 10;
         }
 
-        // Pulse opacity
-        this.opacity = this.baseOpacity + Math.sin(tick * this.pulseSpeed + this.pulseOffset) * 0.2;
-        if (this.opacity < 0.05) this.opacity = 0.05;
-
-        // Draw with soft displacement
         ctx!.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
         ctx!.beginPath();
-        ctx!.arc(this.x + offsetX, this.y + offsetY, this.size, 0, Math.PI * 2);
+        ctx!.arc(px + offsetX, py + offsetY, this.size * (isTransition ? 1.8 : 1.0), 0, Math.PI * 2);
         ctx!.fill();
       }
     }
 
-    // 2. Firefly definition
-    class Firefly {
+    // 2. Aurora Wave
+    const drawAurora = (tick: number) => {
+      ctx!.save();
+      ctx!.shadowBlur = 30;
+      ctx!.shadowColor = "rgba(135, 206, 235, 0.4)";
+      
+      const numWaves = 3;
+      for (let w = 0; w < numWaves; w++) {
+        ctx!.beginPath();
+        const baseGradient = ctx!.createLinearGradient(0, 0, width, 0);
+        baseGradient.addColorStop(0, "rgba(138, 43, 226, 0)");
+        baseGradient.addColorStop(0.3, `rgba(135, 206, 235, ${0.12 - w * 0.03})`);
+        baseGradient.addColorStop(0.7, `rgba(138, 43, 226, ${0.10 - w * 0.02})`);
+        baseGradient.addColorStop(1, "rgba(135, 206, 235, 0)");
+
+        ctx!.fillStyle = baseGradient;
+        
+        ctx!.moveTo(0, height);
+        
+        // Render sine curve path
+        for (let x = 0; x <= width; x += 10) {
+          const waveHeight = 80 + w * 25;
+          const frequency = 0.002 + w * 0.001;
+          const speed = 0.008 - w * 0.002;
+          const y = (height * 0.15) + Math.sin(x * frequency + tick * speed) * waveHeight;
+          ctx!.lineTo(x, y);
+        }
+        
+        ctx!.lineTo(width, height);
+        ctx!.closePath();
+        ctx!.fill();
+      }
+      ctx!.restore();
+    };
+
+    // 3. Flower Pollen particle
+    class Pollen {
       x: number;
       y: number;
       size: number;
-      angle: number;
-      speed: number;
+      speedY: number;
+      speedX: number;
       opacity: number;
-      color: string;
       wobbleSpeed: number;
+      color: string;
 
       constructor() {
         this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.size = Math.random() * 2 + 1;
-        this.angle = Math.random() * Math.PI * 2;
-        this.speed = Math.random() * 0.3 + 0.1;
-        this.opacity = Math.random() * 0.5 + 0.2;
-        this.color = Math.random() > 0.4 ? "rgba(135, 206, 235, 0.6)" : "rgba(191, 239, 255, 0.7)";
-        this.wobbleSpeed = Math.random() * 0.05 + 0.01;
+        this.y = height - Math.random() * 100;
+        this.size = Math.random() * 2.5 + 1;
+        this.speedY = -(Math.random() * 0.6 + 0.3);
+        this.speedX = Math.random() * 0.4 - 0.2;
+        this.opacity = Math.random() * 0.7 + 0.3;
+        this.wobbleSpeed = Math.random() * 0.04 + 0.01;
+        this.color = Math.random() > 0.5 ? "rgba(135, 206, 235, 0.8)" : "rgba(230, 230, 250, 0.8)";
       }
 
       update(tick: number) {
-        // Floating movement using simple sine/cosine drift
-        this.angle += Math.sin(tick * this.wobbleSpeed) * 0.05;
-        this.x += Math.cos(this.angle) * this.speed;
-        this.y += Math.sin(this.angle) * this.speed - 0.1; // soft upward drift
+        this.y += this.speedY;
+        this.x += this.speedX + Math.sin(tick * this.wobbleSpeed) * 0.3;
 
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-        if (this.y < 0) this.y = height;
-        if (this.y > height) this.y = Math.random() * height;
+        if (this.y < -10) {
+          this.y = height + 10;
+          this.x = Math.random() * width;
+        }
 
-        // Pulsing glow
-        const glowOpacity = this.opacity * (0.6 + Math.sin(tick * 0.04) * 0.4);
-
-        ctx!.shadowBlur = 10;
-        ctx!.shadowColor = "rgba(135, 206, 235, 0.8)";
-        ctx!.fillStyle = this.color.replace(/[\d\.]+\)$/, `${glowOpacity})`);
+        ctx!.shadowBlur = 5;
+        ctx!.shadowColor = this.color;
+        ctx!.fillStyle = this.color.replace(/[\d\.]+\)$/, `${this.opacity * (0.6 + Math.sin(tick * 0.05) * 0.4)})`);
         ctx!.beginPath();
         ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx!.fill();
-        ctx!.shadowBlur = 0; // Reset shadow
+        ctx!.shadowBlur = 0;
       }
     }
 
-    // 3. Heart particle definition
+    // 4. Spiral Morphing Hearts
     class HeartParticle {
       x: number;
       y: number;
@@ -272,8 +298,11 @@ export default function DreamCanvas({
       speedX: number;
       opacity: number;
       tickOffset: number;
-      targetIndex: number; // For the constellation spelling at the end
+      targetIndex: number;
       morphProgress: number;
+      // Spiral fields
+      spiralAngle: number;
+      spiralRadius: number;
 
       constructor(targetIndex = -1) {
         this.x = Math.random() * width;
@@ -285,28 +314,39 @@ export default function DreamCanvas({
         this.tickOffset = Math.random() * 100;
         this.targetIndex = targetIndex;
         this.morphProgress = 0;
+        this.spiralAngle = Math.random() * Math.PI * 2;
+        this.spiralRadius = width * 0.4;
       }
 
       update(tick: number, isEndingState: boolean) {
         if (isEndingState && this.targetIndex !== -1) {
-          // Morph towards the constellation targets
           const target = constellationPoints[this.targetIndex];
           if (target) {
-            // Speed up morphing
             if (this.morphProgress < 1) {
-              this.morphProgress += 0.008; // smooth morph
+              this.morphProgress += 0.007; // smooth assembly
               if (this.morphProgress > 1) this.morphProgress = 1;
             }
 
-            // Interpolate position
-            const ease = (t: number) => t * t * (3 - 2 * t); // smoothstep
-            const t = ease(this.morphProgress);
+            const t = this.morphProgress;
+            
+            // Spiral physics: orbit around center first, then pull into coordinates
+            const centerX = width / 2;
+            const centerY = height / 2;
 
-            const currentX = this.x * (1 - t) + target.x * t;
-            const currentY = this.y * (1 - t) + target.y * t;
+            // Spiral angle speeds up as it converges
+            this.spiralAngle += 0.02 * (1 + t * 2);
+            this.spiralRadius = this.spiralRadius * (1 - 0.015) + (target.x - centerX) * 0.015;
 
-            // Draw as a star once morphed, else draw as heart
-            if (this.morphProgress > 0.95) {
+            // Calculate spiral base coordinates
+            const spiralX = centerX + Math.cos(this.spiralAngle) * this.spiralRadius * (1 - t);
+            const spiralY = centerY + Math.sin(this.spiralAngle) * this.spiralRadius * (1 - t);
+
+            // Interpolate from spiral base to direct target coordinates
+            const currentX = spiralX * (1 - t) + target.x * t;
+            const currentY = spiralY * (1 - t) + target.y * t;
+
+            if (t > 0.95) {
+              // Lock as bright white stars
               ctx!.shadowBlur = 15;
               ctx!.shadowColor = "rgba(135, 206, 235, 1)";
               ctx!.fillStyle = `rgba(255, 255, 255, ${0.7 + Math.sin(tick * 0.05 + this.tickOffset) * 0.3})`;
@@ -321,7 +361,7 @@ export default function DreamCanvas({
           }
         }
 
-        // Default: floating upwards
+        // Regular float
         this.y += this.speedY;
         this.x += this.speedX + Math.sin((tick + this.tickOffset) * 0.02) * 0.2;
         
@@ -346,7 +386,51 @@ export default function DreamCanvas({
       }
     }
 
-    // 4. Petal definition
+    // 5. Firefly definition
+    class Firefly {
+      x: number;
+      y: number;
+      size: number;
+      angle: number;
+      speed: number;
+      opacity: number;
+      color: string;
+      wobbleSpeed: number;
+
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.size = Math.random() * 2 + 1;
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = Math.random() * 0.3 + 0.1;
+        this.opacity = Math.random() * 0.5 + 0.2;
+        this.color = "rgba(135, 206, 235, 0.6)";
+        this.wobbleSpeed = Math.random() * 0.05 + 0.01;
+      }
+
+      update(tick: number) {
+        this.angle += Math.sin(tick * this.wobbleSpeed) * 0.05;
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed - 0.1;
+
+        if (this.x < 0) this.x = width;
+        if (this.x > width) this.x = 0;
+        if (this.y < 0) this.y = height;
+        if (this.y > height) this.y = Math.random() * height;
+
+        const glowOpacity = this.opacity * (0.6 + Math.sin(tick * 0.04) * 0.4);
+
+        ctx!.shadowBlur = 10;
+        ctx!.shadowColor = "rgba(135, 206, 235, 0.8)";
+        ctx!.fillStyle = this.color.replace(/[\d\.]+\)$/, `${glowOpacity})`);
+        ctx!.beginPath();
+        ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx!.fill();
+        ctx!.shadowBlur = 0;
+      }
+    }
+
+    // 6. Falling Tulip Petal
     class Petal {
       x: number;
       y: number;
@@ -385,76 +469,16 @@ export default function DreamCanvas({
         ctx!.rotate(this.rotation);
         ctx!.fillStyle = this.color;
         
-        // Draw tulip petal shape (elliptical teardrop)
         ctx!.beginPath();
         ctx!.moveTo(0, -this.size / 2);
         ctx!.bezierCurveTo(-this.size / 2, -this.size / 2, -this.size / 2, this.size / 2, 0, this.size);
         ctx!.bezierCurveTo(this.size / 2, this.size / 2, this.size / 2, -this.size / 2, 0, -this.size / 2);
         ctx!.fill();
-        
         ctx!.restore();
       }
     }
 
-    // 5. Shooting Star definition
-    class ShootingStar {
-      x: number;
-      y: number;
-      length: number;
-      speed: number;
-      opacity: number;
-      active: boolean;
-
-      constructor() {
-        this.x = 0;
-        this.y = 0;
-        this.length = 0;
-        this.speed = 0;
-        this.opacity = 0;
-        this.active = false;
-      }
-
-      trigger() {
-        this.x = Math.random() * (width * 0.6);
-        this.y = Math.random() * (height * 0.4);
-        this.length = Math.random() * 80 + 50;
-        this.speed = Math.random() * 10 + 10;
-        this.opacity = 1;
-        this.active = true;
-      }
-
-      update() {
-        if (!this.active) return;
-
-        this.x += this.speed;
-        this.y += this.speed * 0.5;
-        this.opacity -= 0.02;
-
-        if (this.opacity <= 0) {
-          this.active = false;
-        }
-
-        ctx!.save();
-        const gradient = ctx!.createLinearGradient(
-          this.x - this.speed,
-          this.y - this.speed * 0.5,
-          this.x,
-          this.y
-        );
-        gradient.addColorStop(0, "rgba(135, 206, 235, 0)");
-        gradient.addColorStop(1, `rgba(255, 255, 255, ${this.opacity})`);
-
-        ctx!.strokeStyle = gradient;
-        ctx!.lineWidth = 2;
-        ctx!.beginPath();
-        ctx!.moveTo(this.x - this.length, this.y - this.length * 0.5);
-        ctx!.lineTo(this.x, this.y);
-        ctx!.stroke();
-        ctx!.restore();
-      }
-    }
-
-    // 6. Butterfly definition
+    // 7. Flapping Butterfly
     class Butterfly {
       x: number;
       y: number;
@@ -477,7 +501,6 @@ export default function DreamCanvas({
       }
 
       update(tick: number) {
-        // Flight mechanics
         this.angle += Math.sin((tick + this.tickOffset) * 0.03) * 0.05;
         this.x += Math.cos(this.angle) * this.speedX;
         this.y += Math.sin(this.angle) * 0.4 + this.speedY;
@@ -488,26 +511,22 @@ export default function DreamCanvas({
 
         ctx!.save();
         ctx!.translate(this.x, this.y);
-        ctx!.rotate(this.angle + Math.PI / 2); // face flight direction
+        ctx!.rotate(this.angle + Math.PI / 2);
 
-        // Flapping motion (width scaling using cosine)
         const wingScale = Math.abs(Math.cos((tick + this.tickOffset) * 0.15));
 
-        ctx!.fillStyle = `rgba(135, 206, 235, ${this.opacity})`;
+        ctx!.fillStyle = "rgba(135, 206, 235, 0.75)";
         ctx!.shadowBlur = 6;
         ctx!.shadowColor = "rgba(135, 206, 235, 0.7)";
 
-        // Draw Left Wing
         ctx!.beginPath();
         ctx!.ellipse(-this.size * wingScale, 0, this.size * wingScale, this.size * 0.7, -Math.PI / 6, 0, Math.PI * 2);
         ctx!.fill();
 
-        // Draw Right Wing
         ctx!.beginPath();
         ctx!.ellipse(this.size * wingScale, 0, this.size * wingScale, this.size * 0.7, Math.PI / 6, 0, Math.PI * 2);
         ctx!.fill();
 
-        // Small body
         ctx!.fillStyle = "rgba(255, 255, 255, 0.8)";
         ctx!.shadowBlur = 0;
         ctx!.beginPath();
@@ -518,26 +537,28 @@ export default function DreamCanvas({
       }
     }
 
-    // Initialize collections
-    const starsCount = Math.floor((width * height) / 9000) * (state === "opening" ? 0.3 : 1);
-    const firefliesCount = Math.floor((width * height) / 18000);
+    // Initialize counts based on width/height
+    const starsCount = Math.floor((width * height) / 8000);
+    const firefliesCount = Math.floor((width * height) / 20000);
     const heartsCount = state === "ending" ? constellationPoints.length : 15;
     const petalsCount = Math.floor((width * height) / 25000);
+    const pollensCount = Math.floor((width * height) / 15000);
     const butterfliesCount = 5;
 
-    const stars: Star[] = [];
+    const stars: ParallaxStar[] = [];
     const fireflies: Firefly[] = [];
     const hearts: HeartParticle[] = [];
     const petals: Petal[] = [];
+    const pollens: Pollen[] = [];
     const butterflies: Butterfly[] = [];
-    const shootingStar = new ShootingStar();
 
-    for (let i = 0; i < starsCount; i++) stars.push(new Star());
+    for (let i = 0; i < starsCount; i++) stars.push(new ParallaxStar());
     
     if (state !== "opening") {
       for (let i = 0; i < firefliesCount; i++) fireflies.push(new Firefly());
       for (let i = 0; i < petalsCount; i++) petals.push(new Petal());
       for (let i = 0; i < butterfliesCount; i++) butterflies.push(new Butterfly());
+      for (let i = 0; i < pollensCount; i++) pollens.push(new Pollen());
       
       if (state === "ending") {
         for (let i = 0; i < constellationPoints.length; i++) {
@@ -551,39 +572,32 @@ export default function DreamCanvas({
     let animationFrameId: number;
     let tick = 0;
 
-    // Trigger external shooting star if requested
-    if (triggerShootingStar) {
-      shootingStar.trigger();
-    }
-
-    // Loop
     const render = () => {
       tick++;
       ctx.clearRect(0, 0, width, height);
 
-      // Render Stars
-      stars.forEach((star) => star.update(tick));
+      // Render 3D Parallax Stars
+      stars.forEach((star) => star.update(tick, state === "transition"));
 
-      // Trigger random shooting stars
-      if (state !== "opening" && Math.random() < 0.001) {
-        shootingStar.trigger();
-      }
-      shootingStar.update();
-
-      // Render other entities based on state
+      // Render Aurora waves in background
       if (state !== "opening") {
+        drawAurora(tick);
+      }
+
+      // Render other entities
+      if (state !== "opening" && state !== "transition") {
         fireflies.forEach((firefly) => firefly.update(tick));
         petals.forEach((petal) => petal.update(tick));
+        pollens.forEach((pollen) => pollen.update(tick));
         butterflies.forEach((bf) => bf.update(tick));
         hearts.forEach((heart) => heart.update(tick, state === "ending"));
 
-        // If in ending state, draw the constellation lines connecting stars
+        // If in ending state, connect letter constellations
         if (state === "ending") {
-          // Check if morphing is nearly complete for all hearts
           const allMorphed = hearts.every(h => h.morphProgress > 0.95);
           if (allMorphed) {
             ctx.save();
-            ctx.strokeStyle = "rgba(135, 206, 235, 0.15)";
+            ctx.strokeStyle = "rgba(135, 206, 235, 0.2)";
             ctx.shadowBlur = 10;
             ctx.shadowColor = "rgba(135, 206, 235, 0.4)";
             ctx.lineWidth = 1.2;
@@ -592,7 +606,6 @@ export default function DreamCanvas({
               const p1 = constellationPoints[p1Idx];
               const p2 = constellationPoints[p2Idx];
               if (p1 && p2) {
-                // Line pulse
                 const pulse = 0.5 + Math.sin(tick * 0.04 + p1Idx) * 0.4;
                 ctx.strokeStyle = `rgba(135, 206, 235, ${pulse * 0.25})`;
 

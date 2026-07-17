@@ -1,9 +1,102 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { siteConfig, MemoryItem } from "@/config/site-config";
 import { X, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+
+// Card Component with 3D Tilt Effect
+function GalleryCard({ item, index, onClick }: { item: MemoryItem; index: number; onClick: () => void }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [imgError, setImgError] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
+    const mouseX = (e.clientX - rect.left - width / 2) / width;
+    const mouseY = (e.clientY - rect.top - height / 2) / height;
+
+    setTilt({
+      x: mouseX * 10,
+      y: -mouseY * 10,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 35 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 1.0, delay: index * 0.08 }}
+      onClick={onClick}
+      className="break-inside-avoid relative rounded-xl overflow-hidden glass-card cursor-pointer group flex flex-col pointer-events-auto"
+      style={{ transformStyle: "preserve-3d" }}
+    >
+      {/* 3D Tilt Wrapper */}
+      <div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          transform: `perspective(1000px) rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`,
+          transition: "transform 0.15s ease-out",
+        }}
+        className="w-full h-full flex flex-col"
+      >
+        <div className="relative w-full aspect-video overflow-hidden bg-navy/60">
+          {!imgError ? (
+            <img
+              src={item.image}
+              alt={item.title}
+              loading="lazy"
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 brightness-[0.8] group-hover:brightness-95"
+            />
+          ) : (
+            // Fallback gradient representing night skies
+            <div className="w-full h-full min-h-[170px] bg-linear-to-tr from-navy via-[#1e1b4b]/40 to-[#0c0a09] flex items-center justify-center p-6 relative">
+              <div className="absolute inset-0 bg-radial-gradient(circle at center, rgba(135,206,235,0.1) 0%, transparent 75%)" />
+              <span className="font-playfair text-3xl opacity-15 select-none text-sky-blue">💙</span>
+              <span className="absolute top-4 left-6 text-[10px] text-sky-blue/20">★</span>
+              <span className="absolute bottom-6 right-8 text-[12px] text-sky-blue/20">★</span>
+            </div>
+          )}
+
+          {/* Shimmer sheen reflection */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
+            <div className="absolute top-0 left-[-100%] w-[200%] h-full bg-linear-to-r from-transparent via-white/5 to-transparent transform -skew-x-20 transition-transform duration-700 group-hover:translate-x-[150%]" />
+          </div>
+        </div>
+
+        {/* Card Metadata info */}
+        <div className="p-5 flex flex-col space-y-2 bg-navy/35 border-t border-white/5 relative z-10">
+          <div className="flex items-center space-x-1.5 text-sky-blue/80">
+            <Calendar className="w-3.5 h-3.5" />
+            <span className="font-montserrat text-[9px] tracking-wider uppercase font-medium">
+              {item.date}
+            </span>
+          </div>
+          <h3 className="font-playfair text-lg text-white font-medium group-hover:text-sky-blue transition-colors duration-300">
+            {item.title}
+          </h3>
+          <p className="font-poppins text-xs text-silver/60 font-light leading-relaxed">
+            {item.description}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function MemoryGallery() {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
@@ -33,16 +126,16 @@ export default function MemoryGallery() {
   }, [selectedIdx]);
 
   return (
-    <section className="relative py-24 px-6 overflow-hidden">
+    <section className="relative py-28 px-6 overflow-hidden bg-linear-to-b from-[#020617] via-[#030712] to-[#020617]">
       
       {/* Background glow decoration */}
-      <div className="absolute top-1/3 left-10 w-96 h-96 bg-sky-blue/5 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[450px] h-[450px] bg-soft-purple/5 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute top-1/3 left-10 w-96 h-96 bg-sky-blue/5 rounded-full blur-[100px] pointer-events-none animate-pulse" />
+      <div className="absolute bottom-10 right-10 w-[450px] h-[450px] bg-soft-purple/5 rounded-full blur-[130px] pointer-events-none animate-pulse" />
 
       <div className="max-w-6xl w-full mx-auto z-10 relative">
         
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-20">
           <motion.span
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 0.8, y: 0 }}
@@ -65,67 +158,16 @@ export default function MemoryGallery() {
           </p>
         </div>
 
-        {/* Masonry Columns */}
+        {/* 3D Masonry Columns */}
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-          {siteConfig.gallery.map((item, idx) => {
-            const hasError = imgErrors[item.id];
-            
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.8, delay: idx * 0.1 }}
-                onClick={() => setSelectedIdx(idx)}
-                className="break-inside-avoid relative rounded-xl overflow-hidden glass-card cursor-pointer group flex flex-col"
-              >
-                {/* Image Display or Aesthetic Gradient Fallback if file not uploaded */}
-                <div className="relative w-full aspect-video overflow-hidden bg-navy/60">
-                  {!hasError ? (
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      loading="lazy"
-                      onError={() => setImgErrors((prev) => ({ ...prev, [item.id]: true }))}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 brightness-[0.85] group-hover:brightness-100"
-                    />
-                  ) : (
-                    // Beautiful Abstract Gradient Fallback representing star skies
-                    <div className="w-full h-full min-h-[180px] bg-linear-to-tr from-navy via-[#1e1b4b]/40 to-[#0c0a09] flex items-center justify-center p-6 relative">
-                      <div className="absolute inset-0 bg-radial-gradient(circle at center, rgba(135,206,235,0.15) 0%, transparent 75%)" />
-                      <span className="font-playfair text-4xl opacity-15 select-none text-sky-blue">💙</span>
-                      {/* Floating star particles in placeholder */}
-                      <span className="absolute top-4 left-6 text-[10px] text-sky-blue/20">★</span>
-                      <span className="absolute bottom-6 right-8 text-[12px] text-sky-blue/20">★</span>
-                      <span className="absolute top-1/2 right-12 text-[8px] text-sky-blue/20">★</span>
-                    </div>
-                  )}
-
-                  {/* Glass Shimmer Reflection */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
-                    <div className="absolute top-0 left-[-100%] w-[200%] h-full bg-linear-to-r from-transparent via-white/5 to-transparent transform -skew-x-20 transition-transform duration-700 group-hover:translate-x-[150%]" />
-                  </div>
-                </div>
-
-                {/* Info details */}
-                <div className="p-5 flex flex-col space-y-2 relative bg-navy/20">
-                  <div className="flex items-center space-x-1.5 text-sky-blue/70">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span className="font-montserrat text-[10px] tracking-wider uppercase">
-                      {item.date}
-                    </span>
-                  </div>
-                  <h3 className="font-playfair text-lg text-white font-medium group-hover:text-sky-blue transition-colors duration-300">
-                    {item.title}
-                  </h3>
-                  <p className="font-poppins text-xs text-silver/60 font-light leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              </motion.div>
-            );
-          })}
+          {siteConfig.gallery.map((item, idx) => (
+            <GalleryCard
+              key={item.id}
+              item={item}
+              index={idx}
+              onClick={() => setSelectedIdx(idx)}
+            />
+          ))}
         </div>
 
         {/* Lightbox / Fullscreen Viewer */}
@@ -135,33 +177,30 @@ export default function MemoryGallery() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-[#020617]/95 p-4 md:p-12 backdrop-blur-md"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-[#01030a]/95 p-4 md:p-12 backdrop-blur-md"
             >
-              {/* Close Button */}
               <button
                 onClick={() => setSelectedIdx(null)}
-                className="absolute top-6 right-6 p-2 rounded-full glass-panel hover:border-sky-blue/40 text-white cursor-pointer transition-colors z-25"
+                className="absolute top-6 right-6 p-2 rounded-full glass-panel hover:border-sky-blue/40 text-white cursor-pointer transition-colors z-25 focus:outline-hidden"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Prev Button */}
               <button
                 onClick={handlePrev}
-                className="absolute left-4 p-3 rounded-full glass-panel hover:border-sky-blue/40 text-white cursor-pointer transition-colors z-20"
+                className="absolute left-4 p-3 rounded-full glass-panel hover:border-sky-blue/40 text-white cursor-pointer transition-colors z-20 focus:outline-hidden"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
 
-              {/* Next Button */}
               <button
                 onClick={handleNext}
-                className="absolute right-4 p-3 rounded-full glass-panel hover:border-sky-blue/40 text-white cursor-pointer transition-colors z-20"
+                className="absolute right-4 p-3 rounded-full glass-panel hover:border-sky-blue/40 text-white cursor-pointer transition-colors z-20 focus:outline-hidden"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
 
-              {/* Display Container */}
+              {/* Lightbox Modal display */}
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -175,6 +214,7 @@ export default function MemoryGallery() {
                     <img
                       src={siteConfig.gallery[selectedIdx].image}
                       alt={siteConfig.gallery[selectedIdx].title}
+                      onError={() => setImgErrors((prev) => ({ ...prev, [siteConfig.gallery[selectedIdx!].id]: true }))}
                       className="w-full h-full object-contain"
                     />
                   ) : (
@@ -186,16 +226,16 @@ export default function MemoryGallery() {
                   )}
                 </div>
 
-                {/* Details info */}
+                {/* Details text */}
                 <div className="w-full md:w-2/5 p-8 flex flex-col justify-between bg-navy/90 border-t md:border-t-0 md:border-l border-white/5">
                   <div className="space-y-4">
                     <div className="flex items-center space-x-1.5 text-sky-blue">
                       <Calendar className="w-4 h-4" />
-                      <span className="font-montserrat text-[11px] tracking-wider uppercase">
+                      <span className="font-montserrat text-[11px] tracking-wider uppercase font-medium">
                         {siteConfig.gallery[selectedIdx].date}
                       </span>
                     </div>
-                    <h3 className="font-playfair text-2xl text-white font-medium">
+                    <h3 className="font-playfair text-2xl text-white font-medium font-bold">
                       {siteConfig.gallery[selectedIdx].title}
                     </h3>
                     <div className="w-12 h-[1px] bg-sky-blue/50" />
