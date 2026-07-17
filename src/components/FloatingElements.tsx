@@ -91,10 +91,10 @@ export default function FloatingElements() {
         type: "tulip",
         x: pos.x,
         y: pos.y,
-        size: 22 + Math.random() * 14,
+        size: 22 + ((i * 31 + 7) % 14),
         color: colors[i % colors.length],
-        delay: Math.random() * 3,
-        duration: 4 + Math.random() * 3,
+        delay: ((i * 17 + 3) % 30) / 10,
+        duration: 4 + ((i * 23 + 5) % 30) / 10,
       });
     });
 
@@ -111,10 +111,10 @@ export default function FloatingElements() {
         type: "butterfly",
         x: pos.x,
         y: pos.y,
-        size: 20 + Math.random() * 12,
+        size: 20 + ((i * 29 + 3) % 12),
         color: colors[i % colors.length],
-        delay: Math.random() * 4,
-        duration: 6 + Math.random() * 4,
+        delay: ((i * 19 + 7) % 40) / 10,
+        duration: 6 + ((i * 27 + 1) % 40) / 10,
       });
     });
 

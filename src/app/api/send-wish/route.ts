@@ -4,31 +4,34 @@ export async function POST(request: Request) {
   try {
     const { wish } = await request.json();
 
+    // Telegram Bot credentials
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
     if (!botToken || !chatId) {
-      console.warn("Telegram environment variables TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID are not set.");
+      console.warn("Telegram environment variables are missing.");
       return NextResponse.json({ success: false, error: "Telegram credentials missing on server." });
     }
 
-    const message = `✨ *New Wish Sent to the Cosmos!* ✨\n\n_"${wish}"_`;
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    // Build Telegram message payload
+    const telegramPayload = {
+      chat_id: chatId,
+      text: wish,
+    };
 
-    const res = await fetch(url, {
+    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    const tgRes = await fetch(telegramUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "Markdown",
-      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(telegramPayload),
     });
 
-    const data = await res.json();
-    if (!data.ok) {
-      console.error("Telegram send error:", data);
-      return NextResponse.json({ success: false, error: data.description });
+    const tgData = await tgRes.json();
+    if (!tgRes.ok) {
+      console.error("Telegram send error:", tgData);
+      return NextResponse.json({ success: false, error: tgData.description || "Telegram request failed" });
     }
 
     return NextResponse.json({ success: true });

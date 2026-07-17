@@ -166,17 +166,17 @@ export default function PhotoFrame() {
                       key={i}
                       className="absolute w-1 h-1 bg-sky rounded-full"
                       style={{
-                        top: `${15 + Math.random() * 70}%`,
-                        left: `${10 + Math.random() * 80}%`,
+                        top: `${15 + ((i * 41 + 13) % 70)}%`,
+                        left: `${10 + ((i * 37 + 7) % 80)}%`,
                       }}
                       animate={{
                         opacity: [0, 1, 0],
                         scale: [0.5, 2, 0.5],
                       }}
                       transition={{
-                        duration: 2 + Math.random() * 2,
+                        duration: 2 + ((i * 19 + 3) % 20) / 10,
                         repeat: Infinity,
-                        delay: Math.random() * 2,
+                        delay: ((i * 13 + 5) % 20) / 10,
                       }}
                     />
                   ))}

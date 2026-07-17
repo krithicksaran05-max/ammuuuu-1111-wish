@@ -72,9 +72,13 @@ export default function BackgroundHeart() {
         {/* Floating sparkle dots on the heart */}
         {[...Array(8)].map((_, i) => {
           const angle = (i / 8) * Math.PI * 2;
-          const radius = 120 + Math.random() * 80;
+          // Deterministic "random" offsets based on index to avoid hydration mismatch
+          const seed = ((i + 1) * 37 % 80);
+          const radius = 120 + seed;
           const cx = 50 + Math.cos(angle) * (radius / 4);
           const cy = 42 + Math.sin(angle) * (radius / 4.5);
+          const durationSeed = 3 + ((i * 13 % 20) / 10);
+          const delaySeed = (i * 17 % 30) / 10;
           return (
             <motion.div
               key={i}
@@ -88,9 +92,9 @@ export default function BackgroundHeart() {
                 scale: [0.5, 1.5, 0.5],
               }}
               transition={{
-                duration: 3 + Math.random() * 2,
+                duration: durationSeed,
                 repeat: Infinity,
-                delay: Math.random() * 3,
+                delay: delaySeed,
                 ease: "easeInOut",
               }}
             />
